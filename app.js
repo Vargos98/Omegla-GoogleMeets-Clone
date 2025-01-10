@@ -25,6 +25,9 @@ io.on("connection", (socket) => {
             waitingUsers.push(socket);
         }
     });
+
+    
+
     socket.on("message",(data)=>{
      socket.broadcast.to(data.room).emit("message", data.message); 
     })
