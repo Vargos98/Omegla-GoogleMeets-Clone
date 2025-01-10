@@ -9,22 +9,32 @@ const server = http.createServer(app);
 
 const io = socketIO(server);
 
-let waitingUsers = []; // Corrected variable name
+let waitingUsers = [];
 let rooms = {};
 
 io.on("connection", (socket) => {
-  socket.on("joinroom", () => {
-      if (waitingUsers.length > 0) {
-          let partner = waitingUsers.shift();
-          const roomname = `${socket.id}-${partner.id}`;
-          socket.join(roomname);
-          partner.join(roomname); // Fixed method to join room.
+    socket.on("joinroom", () => {
+        if (waitingUsers.length > 0) {
+            let partner = waitingUsers.shift();
+            const roomname = `${socket.id}-${partner.id}`;
+            socket.join(roomname);
+            io.sockets.sockets.get(partner.id).join(roomname); // Corrected partner joining logic
 
-          io.to(roomname).emit("joined");
-      } else {
-          waitingUsers.push(socket); // No changes needed here.
-      }
-  });
+            io.to(roomname).emit("joined", roomname);
+        } else {
+            waitingUsers.push(socket);
+        }
+    });
+    socket.on("message",(data)=>{
+     socket.broadcast.to(data.room).emit("message", data.message); 
+    })
+
+    socket.on('disconnect', function(){
+        let index = waitingUsers.findIndex(
+            (user) => user.id === socket.id
+        );
+        if (index !== -1) waitingUsers.splice(index, 1); // Safe removal
+    });
 });
 
 app.set('view engine', 'ejs');

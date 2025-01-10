@@ -114,7 +114,7 @@
         <main class="flex-1 p-4 overflow-y-auto relative" id="message-container">
             <div
                 class="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 text-center nobody">
-                bhagwaan kasam koi nahi hai yaha, ruko shaayad koi aajaye.
+                If someone "Joins" this message will disappear!
             </div>
         </main>
         <form id="chatform" class="bg-white p-4 flex">
@@ -133,15 +133,66 @@
             crossorigin="anonymous"></script>
         <script>
             const socket = io();
-
-
+            const chatform = document.querySelector('#chatform');
+            const messagebox = document.querySelector('#messagebox');
+            const messagecontainer = document.querySelector('#message-container');
+            let room;
             socket.emit("joinroom");
 
-            socket.on("joined", () => {
-                console.log("Hey Joined"); // Correctly logs the message.
+            socket.on("joined", function (roomname) {
+                room = roomname;
+                document.querySelector(".nobody").classList.add("hidden"); // Fixed class name
             });
-        </script>
+            socket.on("message", (message) => {
+                receiveMessage(message);
 
+            })
+            chatform.addEventListener("submit", function (event) {
+                event.preventDefault();
+                socket.emit("message", { room: room, message: messagebox.value })
+                attachMessage(messagebox.value)
+                messagebox.value = "";
+
+            })
+            // methods to display messages one after the other side by side.
+            function attachMessage(message) {
+                const userMessageContainer = document.createElement('div');
+                userMessageContainer.classList.add('flex', 'my-2', 'justify-end');
+
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.classList.add('bg-blue-500', 'text-white', 'p-3', 'rounded-lg', 'max-w-xs');
+
+                const userMessageText = document.createElement('p');
+                userMessageText.textContent = message;
+
+                userMessageDiv.appendChild(userMessageText);
+
+                userMessageContainer.appendChild(userMessageDiv);
+
+                document.getElementById('message-container').appendChild(userMessageContainer);
+
+                document.querySelector("#message-container").scrollTop = document.querySelector("#message-container").scrollHeight;
+            }
+
+            function receiveMessage(message) {
+                const messageContainer = document.createElement('div');
+                messageContainer.classList.add('flex', 'my-2', 'justify-start');
+
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('bg-gray-300', 'text-gray-800', 'p-3', 'rounded-lg', 'max-w-xs');
+
+                const messageText = document.createElement('p');
+                messageText.textContent = message;
+
+                messageDiv.appendChild(messageText);
+
+                messageContainer.appendChild(messageDiv);
+
+                document.getElementById('message-container').appendChild(messageContainer);
+                document.querySelector("#message-container").scrollTop = document.querySelector("#message-container").scrollHeight;
+            }
+
+        </script>
 </body>
 
 </html>
