@@ -82,7 +82,7 @@
     <link href="/css/style.css" rel="stylesheet">
 </head>
 
-<body class="flex flex-col h-dvh bg-gray-200">
+<body class="flex  flex-col h-dvh bg-gray-200">
     <%- include('partials/header') %>
         <div class="fixed videoblock hidden z-[222] w-full h-svh">
             <div id="videos">
@@ -104,7 +104,7 @@
             </div>
         </div>
         <div id="incoming-call"
-            class="fixed hidden z-[222] w-full h-dvh bg-gray-900 bg-opacity-75 flex items-center justify-center">
+            class="fixed  hidden z-[222] w-full h-dvh bg-gray-900 bg-opacity-75 flex items-center justify-center">
             <div class="bg-white p-8 rounded-md text-center">
                 <p class="mb-4">Incoming Call...</p>
                 <button id="accept-call" class="bg-green-500 text-white py-2 px-4 rounded-md">Accept</button>
@@ -151,7 +151,7 @@
                 event.preventDefault();
                 socket.emit("message", { room: room, message: messagebox.value })
                 attachMessage(messagebox.value)
-                messagebox.value = "";
+                messagebox.value= "";
 
             })
             // methods to display messages one after the other side by side.
@@ -192,6 +192,32 @@
                 document.querySelector("#message-container").scrollTop = document.querySelector("#message-container").scrollHeight;
             }
 
+
+            //WebRTC Section
+            let localStream;
+            let remoteStream;
+            let peerConnection;
+            let inCall = false;
+            
+            const initialize = async ()=>{
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    document.querySelector('#local-video').srcObject = localStream;
+                    document.querySelector('#local-video').style.display = "block";
+
+                    initiateOffer();
+
+                    inCall = true;
+                } 
+                
+                catch (error) 
+                {
+                    console.log("Rejected by browser")
+                    
+                }
+                  
+            } 
+            // initialize();
         </script>
 </body>
 
