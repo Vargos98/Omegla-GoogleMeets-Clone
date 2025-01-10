@@ -26,17 +26,26 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("signalingMessage", function(data){
+    socket.on("signalingMessage", function(data) {
+        socket.broadcast.to(data.room).emit("signalingMessage", data.message); // Fixed emit
+    });
 
-      socket.broadcast.to(data.room);
+    socket.on("message", (data) => {
+        socket.broadcast.to(data.room).emit("message", data.message);
+    });
 
-    })
+    socket.on("startVideoCall", function({ room }) {
+        socket.broadcast.to(room).emit("incomingCall");
+    });
+    socket.on("rejectCall", function({ room }) {
+      socket.broadcast.to(room).emit("callRejected");
+  });
 
-    socket.on("message",(data)=>{
-     socket.broadcast.to(data.room).emit("message", data.message); 
-    })
+    socket.on("acceptCall", function({ room }) {
+        socket.broadcast.to(room).emit("callAccepted");
+    });
 
-    socket.on('disconnect', function(){
+    socket.on('disconnect', function() {
         let index = waitingUsers.findIndex(
             (user) => user.id === socket.id
         );
