@@ -228,17 +228,17 @@
 
                     const offer = await peerConnection.createOffer();
                     await peerConnection.setLocalDescription(offer);
-                    socket.emit("signalingMessage",{
+                    socket.emit("signalingMessage", {
                         room,
-                        message:JSON.stringify({
-                            type:"offer",
+                        message: JSON.stringify({
+                            type: "offer",
                             offer
                         })
-                       
+
                     })
 
                 } catch (error) {
-                    console.log("error in creating offer",+error)
+                    console.log("error in creating offer", +error)
                 }
 
             }
@@ -276,10 +276,41 @@
                     console.log("connect state changed!", peerConnection.connectionState)
                 }
             }
-            // initialize();
-            const handleSignalingMessage = ()=>{
-                
+
+            const handleSignalingMessage = async (message) => {
+                const { type, offer, answer, candidate } = JSON.parse(message);
+                if (type === "offer") handleOffer(offer);
+                if (type === "answer") handleAnswer(answer);
+                if (type === "candidate" && peerConnection) {
+                    try {
+                        await peerConnection.addIceCandidate(candidate);
+                    } catch (error) {
+                        console.log(error.message)
+                    }
+                }
+
             }
+            const handleOffer = async (offer) => {
+                await createPeerConnection();
+                try {
+                    await peerConnection.setRemoteDescription(offer);
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    socket.emit("signalingMessage", { room, message: JSON.stringify({ type: "answer", answer }) });
+                    inCall = true;
+
+                } catch (error) {
+                    console.log("Failed to handle offer")
+                }
+            }
+            const handleAnswer = async (answer) => {
+                try {
+                    await peerConnection.setRemoteDescription(answer);
+                } catch (error) {
+                    console.log("Failed to handle answer")
+                }
+            }
+
         </script>
 </body>
 
