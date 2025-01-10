@@ -203,6 +203,9 @@
             }
 
             const initialize = async () => {
+                socket.on("signalingMessage", handleSignalingMessage)
+
+
                 try {
                     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                     document.querySelector('#local-video').srcObject = localStream;
@@ -227,10 +230,10 @@
                     await peerConnection.setLocalDescription(offer);
                     socket.emit("signalingMessage",{
                         room,
-                        message:{
+                        message:JSON.stringify({
                             type:"offer",
                             offer
-                        }
+                        })
                        
                     })
 
@@ -274,6 +277,9 @@
                 }
             }
             // initialize();
+            const handleSignalingMessage = ()=>{
+                
+            }
         </script>
 </body>
 

@@ -26,7 +26,11 @@ io.on("connection", (socket) => {
         }
     });
 
-    
+    socket.on("signalingMessage", function(data){
+
+      socket.broadcast.to(data.room);
+
+    })
 
     socket.on("message",(data)=>{
      socket.broadcast.to(data.room).emit("message", data.message); 
